@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.cg.employeepayroll.EmployeePayrollServiceTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-10-30T17:06:48" hostname="AVINASH" time="1.784">
+  <properties/>
+  <testcase name="givenEmployeePayrollDB_whenRecieved_shouldMatchemployeeCount" classname="com.cg.employeepayroll.EmployeePayrollServiceTest" time="1.784"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Loading class `com.mysql.jdbc.Driver'. This is deprecated. The new driver class is `com.mysql.cj.jdbc.Driver'. The driver is automatically registered via the SPI and manual loading of the driver class is generally unnecessary.
+]]></system-err>
+</testsuite>
