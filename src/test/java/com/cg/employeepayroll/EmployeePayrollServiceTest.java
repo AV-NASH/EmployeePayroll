@@ -20,4 +20,12 @@ public class EmployeePayrollServiceTest {
         boolean check=employeePayrollService.checkSalarySyncWithDB("Mark");
         Assert.assertTrue(check);
     }
+
+    @Test
+    public void givenSalaryWhenUpadtedShouldSyncWithDBUsingPreparedStatement() {
+        EmployeePayrollServiceDB employeePayrollService=new EmployeePayrollServiceDB();
+        employeePayrollService.updateEmployeeSalaryPreparedStatement("Charl",(double)25000);
+        boolean check=employeePayrollService.checkSalarySyncWithDBPreparedStatement("Charl");
+        Assert.assertTrue(check);
+    }
 }
