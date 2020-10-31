@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.cg.employeepayroll.EmployeePayrollServiceTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-10-31T18:31:07" hostname="AVINASH" time="1.894">
+<testsuite name="com.cg.employeepayroll.EmployeePayrollServiceTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-10-31T19:02:35" hostname="AVINASH" time="0.527">
   <properties/>
-  <testcase name="givenSalaryWhenUpadtedShouldSyncWithDBUsingPreparedStatement" classname="com.cg.employeepayroll.EmployeePayrollServiceTest" time="1.894"/>
+  <testcase name="givenSalaryWhenUpadtedShouldSyncWithDBUsingPreparedStatement" classname="com.cg.employeepayroll.EmployeePayrollServiceTest" time="0.527"/>
   <system-out><![CDATA[query was not executed
 ]]></system-out>
   <system-err><![CDATA[Loading class `com.mysql.jdbc.Driver'. This is deprecated. The new driver class is `com.mysql.cj.jdbc.Driver'. The driver is automatically registered via the SPI and manual loading of the driver class is generally unnecessary.
@@ -12,8 +12,8 @@ java.sql.SQLSyntaxErrorException: You have an error in your SQL syntax; check th
 	at com.mysql.cj.jdbc.StatementImpl.executeUpdateInternal(StatementImpl.java:1335)
 	at com.mysql.cj.jdbc.StatementImpl.executeLargeUpdate(StatementImpl.java:2108)
 	at com.mysql.cj.jdbc.StatementImpl.executeUpdate(StatementImpl.java:1245)
-	at com.cg.employeepayroll.EmployeePayrollServiceDB.updateEmployeeSalaryInDBPreparedStatement(EmployeePayrollServiceDB.java:111)
-	at com.cg.employeepayroll.EmployeePayrollServiceDB.updateEmployeeSalaryPreparedStatement(EmployeePayrollServiceDB.java:96)
+	at com.cg.employeepayroll.EmployeePayrollServiceDB.updateEmployeeSalaryInDBPreparedStatement(EmployeePayrollServiceDB.java:113)
+	at com.cg.employeepayroll.EmployeePayrollServiceDB.updateEmployeeSalaryPreparedStatement(EmployeePayrollServiceDB.java:98)
 	at com.cg.employeepayroll.EmployeePayrollServiceTest.givenSalaryWhenUpadtedShouldSyncWithDBUsingPreparedStatement(EmployeePayrollServiceTest.java:27)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:64)
@@ -67,8 +67,8 @@ java.sql.SQLSyntaxErrorException: You have an error in your SQL syntax; check th
 	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
 	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122)
 	at com.mysql.cj.jdbc.StatementImpl.executeQuery(StatementImpl.java:1200)
-	at com.cg.employeepayroll.EmployeePayrollServiceDB.checkSalaryRecordInDBPreparedStatement(EmployeePayrollServiceDB.java:136)
-	at com.cg.employeepayroll.EmployeePayrollServiceDB.checkSalarySyncWithDBPreparedStatement(EmployeePayrollServiceDB.java:123)
+	at com.cg.employeepayroll.EmployeePayrollServiceDB.checkSalaryRecordInDBPreparedStatement(EmployeePayrollServiceDB.java:138)
+	at com.cg.employeepayroll.EmployeePayrollServiceDB.checkSalarySyncWithDBPreparedStatement(EmployeePayrollServiceDB.java:125)
 	at com.cg.employeepayroll.EmployeePayrollServiceTest.givenSalaryWhenUpadtedShouldSyncWithDBUsingPreparedStatement(EmployeePayrollServiceTest.java:28)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:64)

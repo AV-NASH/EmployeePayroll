@@ -8,6 +8,8 @@ import java.util.stream.Stream;
 
 public class EmployeePayrollServiceDB {
     ArrayList<EmployeePayroll> employeePayrollArrayList=new ArrayList<EmployeePayroll>();
+    static PreparedStatement preparedStatement;
+    static Statement statement;
 
     public ArrayList<EmployeePayroll> readFromDB() {
         String query="select employee_details.emp_id,employee_details.name,employee_details.address," +
@@ -16,7 +18,7 @@ public class EmployeePayrollServiceDB {
         DatabaseConnection databaseConnection=new DatabaseConnection();
         Connection connection=databaseConnection.getConnecton();
         try {
-            Statement statement=connection.createStatement();
+            statement=connection.createStatement();
             ResultSet resultSet=statement.executeQuery(query);
             while(resultSet.next()){
                 int id=resultSet.getInt("emp_id");
@@ -38,7 +40,7 @@ public class EmployeePayrollServiceDB {
         DatabaseConnection databaseConnection=new DatabaseConnection();
         Connection connection=databaseConnection.getConnecton();
         try {
-            Statement statement=connection.createStatement();
+             statement=connection.createStatement();
            result= statement.executeUpdate(query);
 
         } catch (SQLException throwables) {
@@ -76,7 +78,7 @@ public class EmployeePayrollServiceDB {
         DatabaseConnection databaseConnection=new DatabaseConnection();
         Connection connection=databaseConnection.getConnecton();
         try {
-            Statement statement=connection.createStatement();
+            statement=connection.createStatement();
             ResultSet resultSet=statement.executeQuery(query);
             while(resultSet.next()){
                 int id=resultSet.getInt("emp_id");
@@ -105,10 +107,10 @@ public class EmployeePayrollServiceDB {
         DatabaseConnection databaseConnection=new DatabaseConnection();
         Connection connection=databaseConnection.getConnecton();
         try {
-            PreparedStatement statement=connection.prepareStatement(query);
-            statement.setDouble(1,salary);
-            statement.setString(2,name);
-            result= statement.executeUpdate(query);
+             preparedStatement=connection.prepareStatement(query);
+            preparedStatement.setDouble(1,salary);
+            preparedStatement.setString(2,name);
+            result= preparedStatement.executeUpdate(query);
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -131,9 +133,9 @@ public class EmployeePayrollServiceDB {
         DatabaseConnection databaseConnection=new DatabaseConnection();
         Connection connection=databaseConnection.getConnecton();
         try {
-            PreparedStatement statement=connection.prepareStatement(query);
-            statement.setString(1,name);
-            ResultSet resultSet=statement.executeQuery(query);
+            preparedStatement=connection.prepareStatement(query);
+            preparedStatement.setString(1,name);
+            ResultSet resultSet=preparedStatement.executeQuery(query);
             while(resultSet.next()){
                 int id=resultSet.getInt("emp_id");
                 String nameemployee=resultSet.getString("name");

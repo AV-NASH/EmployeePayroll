@@ -24,7 +24,7 @@ public class EmployeePayrollServiceTest {
     @Test
     public void givenSalaryWhenUpadtedShouldSyncWithDBUsingPreparedStatement() {
         EmployeePayrollServiceDB employeePayrollService=new EmployeePayrollServiceDB();
-        employeePayrollService.updateEmployeeSalaryPreparedStatement("Charl",(double)25000);
+        employeePayrollService.updateEmployeeSalaryPreparedStatement("Charl",(double)25001);
         boolean check=employeePayrollService.checkSalarySyncWithDBPreparedStatement("Charl");
         Assert.assertTrue(check);
     }
