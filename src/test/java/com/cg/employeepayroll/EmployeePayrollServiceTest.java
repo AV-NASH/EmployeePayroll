@@ -12,4 +12,12 @@ public class EmployeePayrollServiceTest {
         ArrayList<EmployeePayroll> employeePayrollArrayList=employeePayrollService.readFromDB();
         Assert.assertEquals(3,employeePayrollArrayList.size());
     }
+
+    @Test
+    public void givenSalaryWhenUpadtedShouldSyncWithDB() {
+        EmployeePayrollServiceDB employeePayrollService=new EmployeePayrollServiceDB();
+        employeePayrollService.updateEmployeeSalary("Mark",(double)19000);
+        boolean check=employeePayrollService.checkSalarySyncWithDB("Mark");
+        Assert.assertTrue(check);
+    }
 }
