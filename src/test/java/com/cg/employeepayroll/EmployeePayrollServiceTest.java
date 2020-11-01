@@ -3,6 +3,7 @@ package com.cg.employeepayroll;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class EmployeePayrollServiceTest {
@@ -24,8 +25,16 @@ public class EmployeePayrollServiceTest {
     @Test
     public void givenSalaryWhenUpadtedShouldSyncWithDBUsingPreparedStatement() {
         EmployeePayrollServiceDB employeePayrollService=new EmployeePayrollServiceDB();
-        employeePayrollService.updateEmployeeSalaryPreparedStatement("Charl",(double)25001);
+        employeePayrollService.updateEmployeeSalaryPreparedStatement("Charl",(double)25005);
         boolean check=employeePayrollService.checkSalarySyncWithDBPreparedStatement("Charl");
         Assert.assertTrue(check);
+    }
+
+    @Test
+    public void givenDateRangeRetrievedRecordCountShouldMatch() {
+        EmployeePayrollServiceDB employeePayrollService=new EmployeePayrollServiceDB();
+       ArrayList<EmployeePayroll> employeePayrollArrayList= employeePayrollService
+               .getEmployeeListBasedOnDate(LocalDate.of(2018,01,01),LocalDate.of(2019,12,01));
+       Assert.assertEquals(2,employeePayrollArrayList.size());
     }
 }
