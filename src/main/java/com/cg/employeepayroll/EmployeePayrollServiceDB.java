@@ -3,6 +3,8 @@ package com.cg.employeepayroll;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -12,7 +14,7 @@ public class EmployeePayrollServiceDB {
     static Statement statement;
 
     public ArrayList<EmployeePayroll> readFromDB() {
-        String query="select employee_details.emp_id,employee_details.name,employee_details.address," +
+        String query="select employee_details.emp_id,employee_details.name,employee_details.gender,employee_details.address," +
                 "employee_details.start,payroll_details.basic_pay from employee_details inner join" +
                 " payroll_details on employee_details.emp_id=payroll_details.emp_id;";
         DatabaseConnection databaseConnection=new DatabaseConnection();
@@ -20,18 +22,35 @@ public class EmployeePayrollServiceDB {
         try {
             statement=connection.createStatement();
             ResultSet resultSet=statement.executeQuery(query);
-            while(resultSet.next()){
-                int id=resultSet.getInt("emp_id");
-                String name=resultSet.getString("name");
-                String address=resultSet.getString("address");
-                LocalDate date=resultSet.getDate("start").toLocalDate();
-                double salary=resultSet.getDouble("basic_pay");
-                employeePayrollArrayList.add(new EmployeePayroll(id,name,address,date,salary));
-            }
+            employeePayrollArrayList=getEmployeeListFromResultSet(resultSet,employeePayrollArrayList);
+//            while(resultSet.next()){
+//                int id=resultSet.getInt("emp_id");
+//                String name=resultSet.getString("name");
+//                char gender=resultSet.getString("gender").charAt(0);
+//                String address=resultSet.getString("address");
+//                LocalDate date=resultSet.getDate("start").toLocalDate();
+//                double salary=resultSet.getDouble("basic_pay");
+//                employeePayrollArrayList.add(new EmployeePayroll(id,name,gender,address,date,salary));
+//            }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
         return  employeePayrollArrayList;
+    }
+
+    private ArrayList<EmployeePayroll> getEmployeeListFromResultSet(ResultSet resultSet, ArrayList<EmployeePayroll> employeePayrollArrayList) {
+      try{  while(resultSet.next()){
+                int id=resultSet.getInt("emp_id");
+                String name=resultSet.getString("name");
+                char gender=resultSet.getString("gender").charAt(0);
+                String address=resultSet.getString("address");
+                LocalDate date=resultSet.getDate("start").toLocalDate();
+                double salary=resultSet.getDouble("basic_pay");
+                employeePayrollArrayList.add(new EmployeePayroll(id,name,gender,address,date,salary));}
+      } catch (SQLException throwables) {
+          throwables.printStackTrace();
+      }
+      return employeePayrollArrayList;
     }
 
     public int updateEmployeeSalaryInDB(String name, double salary) {
@@ -72,7 +91,7 @@ public class EmployeePayrollServiceDB {
 
     private ArrayList<EmployeePayroll> checkSalaryRecordInDB(String name) {
         ArrayList<EmployeePayroll> employeePayrollUpdatedList=new ArrayList<EmployeePayroll>();
-        String query="select employee_details.emp_id,employee_details.name,employee_details.address," +
+        String query="select employee_details.emp_id,employee_details.name,employee_details.gender,employee_details.address," +
                 "employee_details.start,payroll_details.basic_pay from employee_details inner join" +
                 " payroll_details on employee_details.emp_id=payroll_details.emp_id where employee_details.name='"+name+"';";
         DatabaseConnection databaseConnection=new DatabaseConnection();
@@ -80,14 +99,7 @@ public class EmployeePayrollServiceDB {
         try {
             statement=connection.createStatement();
             ResultSet resultSet=statement.executeQuery(query);
-            while(resultSet.next()){
-                int id=resultSet.getInt("emp_id");
-                String nameemployee=resultSet.getString("name");
-                String address=resultSet.getString("address");
-                LocalDate date=resultSet.getDate("start").toLocalDate();
-                double salary=resultSet.getDouble("basic_pay");
-                employeePayrollUpdatedList.add(new EmployeePayroll(id,nameemployee,address,date,salary));
-            }
+           employeePayrollUpdatedList=getEmployeeListFromResultSet(resultSet,employeePayrollUpdatedList);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -127,7 +139,7 @@ public class EmployeePayrollServiceDB {
 
     private ArrayList<EmployeePayroll> checkSalaryRecordInDBPreparedStatement(String name) {
         ArrayList<EmployeePayroll> employeePayrollUpdatedList=new ArrayList<EmployeePayroll>();
-        String query="select employee_details.emp_id,employee_details.name,employee_details.address," +
+        String query="select employee_details.emp_id,employee_details.name,employee_details.gender,employee_details.address," +
                 "employee_details.start,payroll_details.basic_pay from employee_details inner join" +
                 " payroll_details on employee_details.emp_id=payroll_details.emp_id where employee_details.name=?;";
         DatabaseConnection databaseConnection=new DatabaseConnection();
@@ -136,14 +148,7 @@ public class EmployeePayrollServiceDB {
             preparedStatement=connection.prepareStatement(query);
             preparedStatement.setString(1,name);
             ResultSet resultSet=preparedStatement.executeQuery();
-            while(resultSet.next()){
-                int id=resultSet.getInt("emp_id");
-                String nameemployee=resultSet.getString("name");
-                String address=resultSet.getString("address");
-                LocalDate date=resultSet.getDate("start").toLocalDate();
-                double salary=resultSet.getDouble("basic_pay");
-                employeePayrollUpdatedList.add(new EmployeePayroll(id,nameemployee,address,date,salary));
-            }
+            employeePayrollUpdatedList=getEmployeeListFromResultSet(resultSet,employeePayrollUpdatedList);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -152,7 +157,7 @@ public class EmployeePayrollServiceDB {
 
     public ArrayList<EmployeePayroll> getEmployeeListBasedOnDate(LocalDate startDate, LocalDate endDate) {
         ArrayList<EmployeePayroll> employeePayrollUpdatedList=new ArrayList<EmployeePayroll>();
-        String query="select employee_details.emp_id,employee_details.name,employee_details.address," +
+        String query="select employee_details.emp_id,employee_details.name,employee_details.gender,employee_details.address," +
                 "employee_details.start,payroll_details.basic_pay from employee_details inner join " +
                 "payroll_details on employee_details.emp_id=payroll_details.emp_id where" +
                 " employee_details.start between ? and ?;";
@@ -163,17 +168,50 @@ public class EmployeePayrollServiceDB {
             preparedStatement.setDate(1,Date.valueOf(startDate));
             preparedStatement.setDate(2,Date.valueOf(endDate));
             ResultSet resultSet=preparedStatement.executeQuery();
-            while(resultSet.next()){
-                int id=resultSet.getInt("emp_id");
-                String nameemployee=resultSet.getString("name");
-                String address=resultSet.getString("address");
-                LocalDate date=resultSet.getDate("start").toLocalDate();
-                double salary=resultSet.getDouble("basic_pay");
-                employeePayrollUpdatedList.add(new EmployeePayroll(id,nameemployee,address,date,salary));
-            }
+          employeePayrollUpdatedList=getEmployeeListFromResultSet(resultSet,employeePayrollUpdatedList);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
         return employeePayrollUpdatedList;
+    }
+
+    public TreeMap<String, Double> getSalaryByAvgGender() {
+
+        String query="select avg(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id group by employee_details.gender";
+        return getMapofGenderSalary(query);
+    }
+
+    private TreeMap<String, Double> getMapofGenderSalary(String query) {
+        TreeMap<String, Double> stringDoubleTreeMap=new TreeMap<String, Double>();
+        DatabaseConnection databaseConnection=new DatabaseConnection();
+        Connection connection=databaseConnection.getConnecton();
+        try{
+            statement=connection.createStatement();
+            ResultSet resultSet=statement.executeQuery(query);
+            while(resultSet.next()){
+                Double salary=resultSet.getDouble("salary");
+                String gender=resultSet.getString("gender");
+                stringDoubleTreeMap.put(gender,salary);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return stringDoubleTreeMap;
+    }
+
+    public TreeMap<String, Double> getSalaryBySumGender() {
+        String query="select sum(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id group by employee_details.gender";
+        return getMapofGenderSalary(query);
+    }
+
+    public TreeMap<String, Double> getMaxSalaryByGender() {
+        String query="select max(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id group by employee_details.gender";
+        return getMapofGenderSalary(query);
+    }
+
+    public TreeMap<String, Double> getMinSalaryByGender() {
+        String query="select min(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id group by employee_details.gender";
+        return getMapofGenderSalary(query);
+
     }
 }

@@ -5,14 +5,16 @@ import java.time.LocalDate;
 public class EmployeePayroll {
     private int empID;
     private  String name;
+    private char gender;
     private String address;
     private LocalDate date;
     private double salary;
 
 
-    public EmployeePayroll(int empID, String name, String address, LocalDate date, double salary) {
+    public EmployeePayroll(int empID, String name,char gender, String address, LocalDate date, double salary) {
         this.empID = empID;
         this.name = name;
+        this.gender=gender;
         this.address = address;
         this.date = date;
         this.salary = salary;
@@ -67,5 +69,13 @@ public class EmployeePayroll {
                 ", date=" + date +
                 ", salary=" + salary +
                 '}';
+    }
+
+    public char getGender() {
+        return gender;
+    }
+
+    public void setGender(char gender) {
+        this.gender = gender;
     }
 }

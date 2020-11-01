@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.cg.employeepayroll.EmployeePayrollServiceTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-11-01T06:18:13" hostname="AVINASH" time="1.065">
+<testsuite name="com.cg.employeepayroll.EmployeePayrollServiceTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-11-01T10:12:28" hostname="AVINASH" time="0.569">
   <properties/>
-  <testcase name="givenSalaryWhenUpadtedShouldSyncWithDBUsingPreparedStatement" classname="com.cg.employeepayroll.EmployeePayrollServiceTest" time="1.065"/>
+  <testcase name="retrieveMinSalaryBasedOnGenderFromDatabase" classname="com.cg.employeepayroll.EmployeePayrollServiceTest" time="0.569"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[Loading class `com.mysql.jdbc.Driver'. This is deprecated. The new driver class is `com.mysql.cj.jdbc.Driver'. The driver is automatically registered via the SPI and manual loading of the driver class is generally unnecessary.
 ]]></system-err>

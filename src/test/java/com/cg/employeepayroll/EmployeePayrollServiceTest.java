@@ -5,6 +5,8 @@ import org.junit.Test;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class EmployeePayrollServiceTest {
     @Test
@@ -36,5 +38,37 @@ public class EmployeePayrollServiceTest {
        ArrayList<EmployeePayroll> employeePayrollArrayList= employeePayrollService
                .getEmployeeListBasedOnDate(LocalDate.of(2018,01,01),LocalDate.of(2019,12,01));
        Assert.assertEquals(2,employeePayrollArrayList.size());
+    }
+
+    @Test
+    public void retrieveAvgSalaryBasedOnGenderFromDatabase() {
+        EmployeePayrollServiceDB employeePayrollService=new EmployeePayrollServiceDB();
+        TreeMap<String, Double> genderAvg=employeePayrollService.getSalaryByAvgGender();
+        Assert.assertEquals(25005.0,genderAvg.get("F"),0.01);
+        Assert.assertEquals(14500.0,genderAvg.get("M"),0.01);
+    }
+
+    @Test
+    public void retrieveSumSalaryBasedOnGenderFromDatabase() {
+        EmployeePayrollServiceDB employeePayrollService=new EmployeePayrollServiceDB();
+        TreeMap<String, Double> genderSum=employeePayrollService.getSalaryBySumGender();
+        Assert.assertEquals(25005.0,genderSum.get("F"),0.01);
+        Assert.assertEquals(29000.0,genderSum.get("M"),0.01);
+    }
+
+    @Test
+    public void retrieveMaxSalaryBasedOnGenderFromDatabase() {
+        EmployeePayrollServiceDB employeePayrollService=new EmployeePayrollServiceDB();
+        TreeMap<String, Double> genderSum=employeePayrollService.getMaxSalaryByGender();
+        Assert.assertEquals(25005.0,genderSum.get("F"),0.01);
+        Assert.assertEquals(19000.0,genderSum.get("M"),0.01);
+    }
+
+    @Test
+    public void retrieveMinSalaryBasedOnGenderFromDatabase() {
+        EmployeePayrollServiceDB employeePayrollService=new EmployeePayrollServiceDB();
+        TreeMap<String, Double> genderSum=employeePayrollService.getMinSalaryByGender();
+        Assert.assertEquals(25005.0,genderSum.get("F"),0.01);
+        Assert.assertEquals(10000.0,genderSum.get("M"),0.01);
     }
 }
