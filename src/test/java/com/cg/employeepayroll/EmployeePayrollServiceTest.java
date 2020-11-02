@@ -72,11 +72,14 @@ public class EmployeePayrollServiceTest {
         Assert.assertEquals(10000.0,genderSum.get("M"),0.01);
     }
 
+
     @Test
-    public void addDataToDatabaseAndSyncItWithObject() {
+    public void givenNewEmployeewithPayrollWhenAddedSyncWithDB() {
         EmployeePayrollServiceDB employeePayrollService=new EmployeePayrollServiceDB();
-        employeePayrollService.addEmployeeData(4,"Jamie",'M',"pune",LocalDate.now());
+        employeePayrollService.addEmployeeData(4,"Jamie",'M',"pune",LocalDate.now(),(double)40000);
         boolean check=employeePayrollService.checkSalarySyncWithDB("Jamie");
         Assert.assertTrue(check);
     }
+
+
 }
