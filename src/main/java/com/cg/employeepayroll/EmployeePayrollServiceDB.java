@@ -23,15 +23,6 @@ public class EmployeePayrollServiceDB {
             statement=connection.createStatement();
             ResultSet resultSet=statement.executeQuery(query);
             employeePayrollArrayList=getEmployeeListFromResultSet(resultSet,employeePayrollArrayList);
-//            while(resultSet.next()){
-//                int id=resultSet.getInt("emp_id");
-//                String name=resultSet.getString("name");
-//                char gender=resultSet.getString("gender").charAt(0);
-//                String address=resultSet.getString("address");
-//                LocalDate date=resultSet.getDate("start").toLocalDate();
-//                double salary=resultSet.getDouble("basic_pay");
-//                employeePayrollArrayList.add(new EmployeePayroll(id,name,gender,address,date,salary));
-//            }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -86,6 +77,8 @@ public class EmployeePayrollServiceDB {
        ArrayList<EmployeePayroll> employeePayrollArrayListDB=new ArrayList<EmployeePayroll>( employeePayrollArrayList.stream().
                filter(p->p.getName().
                        equals(name)).collect(Collectors.toList()));
+        System.out.println(employeePayrollArrayListDB.toString());
+        System.out.println(checkSalaryRecordInDB(name).toString());
        return employeePayrollArrayListDB.toString().equals(checkSalaryRecordInDB(name).toString());
     }
 
@@ -99,7 +92,14 @@ public class EmployeePayrollServiceDB {
         try {
             statement=connection.createStatement();
             ResultSet resultSet=statement.executeQuery(query);
-           employeePayrollUpdatedList=getEmployeeListFromResultSet(resultSet,employeePayrollUpdatedList);
+            while(resultSet.next()){
+                int id=resultSet.getInt("emp_id");
+                String empname=resultSet.getString("name");
+                char gender=resultSet.getString("gender").charAt(0);
+                String address=resultSet.getString("address");
+                LocalDate date=resultSet.getDate("start").toLocalDate();
+
+                employeePayrollUpdatedList.add(new EmployeePayroll(id,name,gender,address,date));}
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -213,5 +213,25 @@ public class EmployeePayrollServiceDB {
         String query="select min(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id group by employee_details.gender";
         return getMapofGenderSalary(query);
 
+    }
+
+    public void addEmployeeData(int id,String name, Character gender, String address, LocalDate date) {
+
+        String query=String.format("insert into employee_details (emp_id,name,gender,address,start) " +
+                "values (%s,'%s','%s','%s','%s');",id,name,gender,address,Date.valueOf(date));
+        DatabaseConnection databaseConnection=new DatabaseConnection();
+        Connection connection=databaseConnection.getConnecton();
+        try{
+            statement=connection.createStatement();
+        int rowaffected=statement.executeUpdate(query);
+        if(rowaffected==1){
+            employeePayrollArrayList=readFromDB();
+            System.out.println(employeePayrollArrayList.toString());
+            employeePayrollArrayList.add(new EmployeePayroll(id,name,gender,address,date));
+        }
+        else System.out.println("data not added");
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 }

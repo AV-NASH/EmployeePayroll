@@ -20,6 +20,14 @@ public class EmployeePayroll {
         this.salary = salary;
     }
 
+    public EmployeePayroll(int empID, String name, char gender, String address, LocalDate date) {
+        this.empID = empID;
+        this.name = name;
+        this.gender = gender;
+        this.address = address;
+        this.date = date;
+    }
+
     public int getEmpID() {
         return empID;
     }
