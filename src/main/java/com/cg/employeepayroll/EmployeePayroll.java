@@ -10,6 +10,12 @@ public class EmployeePayroll {
     private LocalDate date;
     private double salary;
 
+    public void setDepartment(String[] department) {
+        this.department = department;
+    }
+
+    private String[] department;
+
 
     public EmployeePayroll(int empID, String name,char gender, String address, LocalDate date, double salary) {
         this.empID = empID;
@@ -85,5 +91,9 @@ public class EmployeePayroll {
 
     public void setGender(char gender) {
         this.gender = gender;
+    }
+
+    public String[] getDepartment() {
+        return department;
     }
 }
