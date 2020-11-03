@@ -1,6 +1,7 @@
 package com.cg.employeepayroll;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 public class EmployeePayroll {
     private int empID;
@@ -9,12 +10,13 @@ public class EmployeePayroll {
     private String address;
     private LocalDate date;
     private double salary;
+    private ArrayList<String> department;
 
-    public void setDepartment(String[] department) {
+    public void setDepartment(ArrayList<String> department) {
         this.department = department;
     }
 
-    private String[] department;
+
 
 
     public EmployeePayroll(int empID, String name,char gender, String address, LocalDate date, double salary) {
@@ -93,7 +95,7 @@ public class EmployeePayroll {
         this.gender = gender;
     }
 
-    public String[] getDepartment() {
+    public ArrayList<String> getDepartment() {
         return department;
     }
 }
