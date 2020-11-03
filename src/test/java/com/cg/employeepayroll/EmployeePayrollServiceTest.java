@@ -76,7 +76,7 @@ public class EmployeePayrollServiceTest {
     @Test
     public void givenNewEmployeewithPayrollWhenAddedSyncWithDB() {
         EmployeePayrollServiceDB employeePayrollService=new EmployeePayrollServiceDB();
-        employeePayrollService.addEmployeeData(4,"Jamie",'M',"pune",LocalDate.now(),(double)40000);
+        employeePayrollService.addEmployeeData(4,"Jamie",'M',"pune",LocalDate.now(),(double)40000, "Research and development");
         boolean check=employeePayrollService.checkSalarySyncWithDB("Jamie");
         Assert.assertTrue(check);
     }

@@ -356,9 +356,10 @@ public class EmployeePayrollServiceDB {
 
     }
 
-    public void addEmployeeData(int id, String name, Character gender, String address, LocalDate date, double salary) {
-        int rowaffected1 = 0, rowaffected2;
+    public void addEmployeeData(int id, String name, Character gender, String address, LocalDate date, double salary, String department) {
+        int rowaffected1 = 0, rowaffected2=0,rowaffected3=0,rowaffected4;
         employeePayrollArrayList = readFromDB();
+        int dep_id=getDepIDFromDB(department);
         String query1 = String.format("insert into employee_details (emp_id,name,gender,address,start) " +
                 "values (%s,'%s','%s','%s','%s');", id, name, gender, address, Date.valueOf(date));
         DatabaseConnection databaseConnection = new DatabaseConnection();
@@ -396,13 +397,72 @@ public class EmployeePayrollServiceDB {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        } finally {
+        }
+        String query3=String.format("insert into employee_department values (%s,%s)",id,dep_id);
+        String query4=String.format("insert into department_details values ('%s',%s)",department,dep_id);
+
+        try {
+            connection.setAutoCommit(false);
+            statement = connection.createStatement();
+            rowaffected3 = statement.executeUpdate(query3);
+            connection.commit();
+            if (rowaffected1 == 1 && rowaffected2 == 1&&rowaffected3==1) {
+
+            } else System.out.println("data not added");
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            try {
+                connection.rollback();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            connection.setAutoCommit(false);
+            statement = connection.createStatement();
+            rowaffected4 = statement.executeUpdate(query4);
+            connection.commit();
+            if (rowaffected1 == 1 && rowaffected2 == 1&&rowaffected3==1&&rowaffected4==1) {
+                employeePayrollArrayList.stream().filter(p->p.getEmpID()==id).forEach(p->p.getDepartment().add(department));
+            } else System.out.println("data not added");
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            try {
+                connection.rollback();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        finally {
             try {
                 connection.close();
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
         }
+    }
+
+    private int getDepIDFromDB(String department) {
+        int dep_id=100;
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        Connection connection = databaseConnection.getConnecton();
+        String query="select dep_id from department_details where department_name='"+department+"';";
+        try {
+            statement = connection.createStatement();
+            ResultSet resultSet=statement.executeQuery(query);
+            if(!resultSet.next()) dep_id=101;
+            else{
+                resultSet.beforeFirst();
+                while (resultSet.next()){
+                    dep_id++;
+                }
+                dep_id++;
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return dep_id;
     }
 }
 
