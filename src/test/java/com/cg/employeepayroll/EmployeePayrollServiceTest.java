@@ -82,6 +82,12 @@ public class EmployeePayrollServiceTest {
     }
 
     @Test
-    public void name() {
+    public void givenNameDeleteTheRecordFromDataBase() {
+        EmployeePayrollServiceDB employeePayrollService=new EmployeePayrollServiceDB();
+        employeePayrollService.deleteEntryFromDataBase("Jamie");
+        ArrayList<EmployeePayroll> employeePayrollArrayList=employeePayrollService.checkSalaryRecordInDBPreparedStatement("Jamie");
+      Assert.assertTrue(employeePayrollArrayList.isEmpty());
+
+
     }
 }

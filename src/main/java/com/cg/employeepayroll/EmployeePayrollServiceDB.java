@@ -20,7 +20,7 @@ public class EmployeePayrollServiceDB {
         Connection connection = databaseConnection.getConnecton();
         String query1 = "select employee_details.emp_id,employee_details.name,employee_details.gender,employee_details.address," +
                 "employee_details.start,payroll_details.basic_pay from employee_details inner join" +
-                " payroll_details on employee_details.emp_id=payroll_details.emp_id;";
+                " payroll_details on employee_details.emp_id=payroll_details.emp_id where is_active=ture;";
         try {
             connection.setAutoCommit(false);
             statement = connection.createStatement();
@@ -35,7 +35,7 @@ public class EmployeePayrollServiceDB {
                 e.printStackTrace();
             }
         }
-        String query2="select emp_id, department_name from department_details inner join employee_department on department_details.dep_id=employee_department.dep_id";
+        String query2="select emp_id, department_name from department_details inner join employee_department on department_details.dep_id=employee_department.dep_id where emp_id in (select emp_id from employee_details where is_active=true)";
         try {
             connection.setAutoCommit(false);
             statement = connection.createStatement();
@@ -135,7 +135,7 @@ public class EmployeePayrollServiceDB {
         Connection connection = databaseConnection.getConnecton();
         String query1 = "select employee_details.emp_id,employee_details.name,employee_details.gender,employee_details.address," +
                 "employee_details.start,payroll_details.basic_pay from employee_details inner join" +
-                " payroll_details on employee_details.emp_id=payroll_details.emp_id where employee_details.name='" + name + "';";
+                " payroll_details on employee_details.emp_id=payroll_details.emp_id where employee_details.name='" + name + "' and is_active=true;";
 
         try {
             connection.setAutoCommit(false);
@@ -152,7 +152,7 @@ public class EmployeePayrollServiceDB {
             }
         }
 
-        String query2="select emp_id, department_name from department_details inner join employee_department on department_details.dep_id=employee_department.dep_id where emp_id in (select emp_id from employe_details where name='"+name+"')";
+        String query2="select emp_id, department_name from department_details inner join employee_department on department_details.dep_id=employee_department.dep_id where emp_id in (select emp_id from employe_details where name='"+name+"' and is_active=true)";
         try {
             connection.setAutoCommit(false);
             statement = connection.createStatement();
@@ -189,7 +189,7 @@ public class EmployeePayrollServiceDB {
         String query = " update payroll_details inner join employee_details on employee_details.emp_id=payroll_details.emp_id" +
                 " set payroll_details.basic_pay=?,payroll_details.deductions=?" +
                 ",payroll_details.taxable_pay=?,payroll_details.income_tax=?" +
-                ",payroll_details.net_pay=? where employee_details.name=?;";
+                ",payroll_details.net_pay=? where employee_details.name=? and is_active=true;";
         DatabaseConnection databaseConnection = new DatabaseConnection();
         Connection connection = databaseConnection.getConnecton();
         try {
@@ -215,14 +215,14 @@ public class EmployeePayrollServiceDB {
         return employeePayrollArrayListDB.toString().equals(checkSalaryRecordInDBPreparedStatement(name).toString());
     }
 
-    private ArrayList<EmployeePayroll> checkSalaryRecordInDBPreparedStatement(String name) {
+    public ArrayList<EmployeePayroll> checkSalaryRecordInDBPreparedStatement(String name) {
         ResultSet resultSet1 = null,resultSet2;
         DatabaseConnection databaseConnection = new DatabaseConnection();
         Connection connection = databaseConnection.getConnecton();
         ArrayList<EmployeePayroll> employeePayrollUpdatedList = new ArrayList<EmployeePayroll>();
         String query1 = "select employee_details.emp_id,employee_details.name,employee_details.gender,employee_details.address," +
                 "employee_details.start,payroll_details.basic_pay from employee_details inner join" +
-                " payroll_details on employee_details.emp_id=payroll_details.emp_id where employee_details.name=?;";
+                " payroll_details on employee_details.emp_id=payroll_details.emp_id where employee_details.name=? and is_active=true;";
         try {
             connection.setAutoCommit(false);
             preparedStatement = connection.prepareStatement(query1);
@@ -238,7 +238,7 @@ public class EmployeePayrollServiceDB {
             }
         }
 
-        String query2="select emp_id, department_name from department_details inner join employee_department on department_details.dep_id=employee_department.dep_id where emp_id in (select emp_id from employee_details where name=?);";
+        String query2="select emp_id, department_name from department_details inner join employee_department on department_details.dep_id=employee_department.dep_id where emp_id in (select emp_id from employee_details where name=? and is_active=true);";
         try {
             connection.setAutoCommit(false);
             preparedStatement = connection.prepareStatement(query2);
@@ -273,7 +273,7 @@ public class EmployeePayrollServiceDB {
         String query1 = "select employee_details.emp_id,employee_details.name,employee_details.gender,employee_details.address," +
                 "employee_details.start,payroll_details.basic_pay from employee_details inner join " +
                 "payroll_details on employee_details.emp_id=payroll_details.emp_id where" +
-                " employee_details.start between ? and ?;";
+                " employee_details.start between ? and ? and is_active=true;";
         try {
             connection.setAutoCommit(false);
             preparedStatement = connection.prepareStatement(query1);
@@ -289,7 +289,7 @@ public class EmployeePayrollServiceDB {
                 e.printStackTrace();
             }
         }
-        String query2 = "select emp_id, department_name from department_details inner join employee_department on department_details.dep_id=employee_department.dep_id  where emp_id in (select emp_id from employee_details where start between ? and ?;";
+        String query2 = "select emp_id, department_name from department_details inner join employee_department on department_details.dep_id=employee_department.dep_id  where emp_id in (select emp_id from employee_details where start between ? and ? and is_active=true);";
         try {
             connection.setAutoCommit(false);
             preparedStatement = connection.prepareStatement(query2);
@@ -317,7 +317,7 @@ public class EmployeePayrollServiceDB {
 
     public TreeMap<String, Double> getSalaryByAvgGender() {
 
-        String query = "select avg(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id group by employee_details.gender";
+        String query = "select avg(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id where is_active=true group by employee_details.gender";
         return getMapofGenderSalary(query);
     }
 
@@ -341,17 +341,17 @@ public class EmployeePayrollServiceDB {
     }
 
     public TreeMap<String, Double> getSalaryBySumGender() {
-        String query = "select sum(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id group by employee_details.gender";
+        String query = "select sum(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id where is_active=true group by employee_details.gender";
         return getMapofGenderSalary(query);
     }
 
     public TreeMap<String, Double> getMaxSalaryByGender() {
-        String query = "select max(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id group by employee_details.gender";
+        String query = "select max(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id where is_active=true group by employee_details.gender";
         return getMapofGenderSalary(query);
     }
 
     public TreeMap<String, Double> getMinSalaryByGender() {
-        String query = "select min(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id group by employee_details.gender";
+        String query = "select min(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id where is_active=true group by employee_details.gender";
         return getMapofGenderSalary(query);
 
     }
@@ -463,6 +463,20 @@ public class EmployeePayrollServiceDB {
             throwables.printStackTrace();
         }
         return dep_id;
+    }
+
+    public void deleteEntryFromDataBase(String name) {
+        String query="update employee_details set is_active=false where name='"+name+"';";
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        Connection connection = databaseConnection.getConnecton();
+        try {
+            statement = connection.createStatement();
+           int rowaffected= statement.executeUpdate(query);
+           if(!(rowaffected==1)) System.out.println("operation not successful");
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 }
 
