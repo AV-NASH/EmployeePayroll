@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.cg.employeepayroll.EmployeePayrollRESTAPITest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-11-08T17:51:16" hostname="AVINASH" time="3.041">
+  <properties/>
+  <testcase name="givenEmployeeToDeleteWhenDeletedShouldMatchStatusCodeAndCount" classname="com.cg.employeepayroll.EmployeePayrollRESTAPITest" time="3.041"/>
+  <system-out><![CDATA[[
+  {
+    "id": 1,
+    "name": "Phillie",
+    "gender": "F",
+    "address": "Torronto",
+    "date": {
+      "year": 2020,
+      "month": 11,
+      "day": 1
+    },
+    "salary": 10000
+  },
+  {
+    "id": 2,
+    "name": "Avi",
+    "gender": "M",
+    "address": "California",
+    "date": {
+      "year": 2020,
+      "month": 12,
+      "day": 3
+    },
+    "salary": 30000
+  },
+  {
+    "id": 3,
+    "name": "Bill",
+    "gender": "M",
+    "address": "LA",
+    "date": {
+      "year": 2020,
+      "month": 9,
+      "day": 13
+    },
+    "salary": 54000
+  },
+  {
+    "id": 4,
+    "name": "Mark",
+    "gender": "M",
+    "address": "Ohio",
+    "date": {
+      "year": 2020,
+      "month": 11,
+      "day": 8
+    },
+    "salary": 25000
+  },
+  {
+    "id": 6,
+    "name": "Sam",
+    "gender": "M",
+    "address": "London",
+    "date": {
+      "year": 2020,
+      "month": 11,
+      "day": 8
+    },
+    "salary": 43000
+  },
+  {
+    "id": 5,
+    "name": "Cory",
+    "gender": "M",
+    "address": "Madras",
+    "date": {
+      "year": 2020,
+      "month": 11,
+      "day": 8
+    },
+    "salary": 65000
+  }
+]
+EmployeePayroll{empID=2, name='Avi', address='California', date=2020-12-03, salary=30000.0}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

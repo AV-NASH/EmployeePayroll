@@ -3,21 +3,24 @@ package com.cg.employeepayroll;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class EmployeePayrollServiceDB {
     ArrayList<EmployeePayroll> employeePayrollArrayList = new ArrayList<EmployeePayroll>();
     static PreparedStatement preparedStatement;
     static Statement statement;
 
-    public ArrayList<EmployeePayroll> readFromDB() {
+    public ArrayList<EmployeePayroll> readFromDB() throws RollBackFailedException, ConnectionNotClosedException, SqlDataOperationException {
         ResultSet resultSet1 = null,resultSet2;
 
         DatabaseConnection databaseConnection = new DatabaseConnection();
-        Connection connection = databaseConnection.getConnecton();
+        Connection connection = null;
+        try {
+            connection = databaseConnection.getConnecton();
+        } catch (FailedConnectionException e) {
+            e.getMessage();
+        }
         String query1 = "select employee_details.emp_id,employee_details.name,employee_details.gender,employee_details.address," +
                 "employee_details.start,payroll_details.basic_pay from employee_details inner join" +
                 " payroll_details on employee_details.emp_id=payroll_details.emp_id where is_active=ture;";
@@ -26,13 +29,13 @@ public class EmployeePayrollServiceDB {
             statement = connection.createStatement();
              resultSet1 = statement.executeQuery(query1);
             connection.commit();
-//            employeePayrollArrayList = getEmployeeListFromResultSet(resultSet, employeePayrollArrayList);
+
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RollBackFailedException("Error occurred while rollbacking the data");
             }
         }
         String query2="select emp_id, department_name from department_details inner join employee_department on department_details.dep_id=employee_department.dep_id where emp_id in (select emp_id from employee_details where is_active=true)";
@@ -47,21 +50,21 @@ public class EmployeePayrollServiceDB {
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RollBackFailedException("Error occurred while rollbacking the data");
             }
         }
         finally {
             try {
                 connection.close();
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                throw new ConnectionNotClosedException("error occurred while closing the connection");
             }
         }
 
         return employeePayrollArrayList;
     }
 
-    private ArrayList<EmployeePayroll> getEmployeeListFromResultSet(ResultSet resultSet1,ResultSet resultSet2, ArrayList<EmployeePayroll> employeePayrollArrayList) {
+    private ArrayList<EmployeePayroll> getEmployeeListFromResultSet(ResultSet resultSet1,ResultSet resultSet2, ArrayList<EmployeePayroll> employeePayrollArrayList) throws SqlDataOperationException {
         try {
         if(resultSet1.next()&&resultSet2.next()){
             resultSet1.beforeFirst();resultSet2.beforeFirst();
@@ -78,16 +81,16 @@ public class EmployeePayrollServiceDB {
             while(resultSet2.next()){
                 int id=resultSet2.getInt(1);
                 String dep=resultSet2.getString(2);
-                employeePayrollArrayList.stream().filter(p->p.getEmpID()==id).forEach(p->p.getDepartment().add(dep));
+                employeePayrollArrayList.stream().filter(p->p.getId()==id).forEach(p->p.getDepartment().add(dep));
             }
         }
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+           throw new SqlDataOperationException("Some error occurred while performing dql operation");
         }
         return employeePayrollArrayList;
     }
 
-    public int updateEmployeeSalaryInDB(String name, double salary) {
+    public int updateEmployeeSalaryInDB(String name, double salary) throws SqlDataOperationException {
         int result = 0;
         String query = " update payroll_details inner join employee_details on employee_details.emp_id=payroll_details.emp_id" +
                 " set payroll_details.basic_pay=" + salary + ",payroll_details.deductions=" + (0.2 * salary) +
@@ -95,32 +98,50 @@ public class EmployeePayrollServiceDB {
                 ",payroll_details.net_pay=" +(salary - ((salary - (0.2 * salary)) * 0.1)) +
                 " where employee_details.name='" + name + "';";
         DatabaseConnection databaseConnection = new DatabaseConnection();
-        Connection connection = databaseConnection.getConnecton();
+        Connection connection = null;
+        try {
+            connection = databaseConnection.getConnecton();
+        } catch (FailedConnectionException e) {
+            e.getMessage();
+        }
         try {
             statement = connection.createStatement();
             result = statement.executeUpdate(query);
 
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            throw new SqlDataOperationException("Some error occurred while performing sql operation");
         }
         return result;
     }
 
     public void updateEmployeeSalary(String name, double salary) {
-        int check = updateEmployeeSalaryInDB(name, salary);
+        int check = 0;
+        try {
+            check = updateEmployeeSalaryInDB(name, salary);
+        } catch (SqlDataOperationException e) {
+            e.getMessage();
+        }
         if (check != 0)
             updateEmployeeSalaryInObject(name, salary);
         else System.out.println("value not updated in database");
     }
 
     private void updateEmployeeSalaryInObject(String name, double salary) {
-        employeePayrollArrayList = readFromDB();
+        try {
+            employeePayrollArrayList = readFromDB();
+        } catch (RollBackFailedException e) {
+            e.getMessage();
+        } catch (ConnectionNotClosedException e) {
+            e.getMessage();
+        } catch (SqlDataOperationException e) {
+            e.getMessage();
+        }
         employeePayrollArrayList.stream()
                 .filter(p -> p.getName().equals(name))
                 .forEach(p -> p.setSalary(salary));
     }
 
-    public boolean checkSalarySyncWithDB(String name) {
+    public boolean checkSalarySyncWithDB(String name) throws RollBackFailedException, ConnectionNotClosedException {
         ArrayList<EmployeePayroll> employeePayrollArrayListDB = new ArrayList<EmployeePayroll>(employeePayrollArrayList.stream().
                 filter(p -> p.getName().
                         equals(name)).collect(Collectors.toList()));
@@ -128,11 +149,16 @@ public class EmployeePayrollServiceDB {
         return employeePayrollArrayListDB.toString().equals(checkSalaryRecordInDB(name).toString());
     }
 
-    private ArrayList<EmployeePayroll> checkSalaryRecordInDB(String name) {
+    private ArrayList<EmployeePayroll> checkSalaryRecordInDB(String name) throws RollBackFailedException, ConnectionNotClosedException {
         ResultSet resultSet1 = null,resultSet2;
         ArrayList<EmployeePayroll> employeePayrollUpdatedList = new ArrayList<EmployeePayroll>();
         DatabaseConnection databaseConnection = new DatabaseConnection();
-        Connection connection = databaseConnection.getConnecton();
+        Connection connection = null;
+        try {
+            connection = databaseConnection.getConnecton();
+        } catch (FailedConnectionException e) {
+            e.getMessage();
+        }
         String query1 = "select employee_details.emp_id,employee_details.name,employee_details.gender,employee_details.address," +
                 "employee_details.start,payroll_details.basic_pay from employee_details inner join" +
                 " payroll_details on employee_details.emp_id=payroll_details.emp_id where employee_details.name='" + name + "' and is_active=true;";
@@ -148,7 +174,7 @@ public class EmployeePayrollServiceDB {
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RollBackFailedException("Error occurred while rollbacking the data");
             }
         }
 
@@ -164,34 +190,45 @@ public class EmployeePayrollServiceDB {
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RollBackFailedException("Error occurred while rollbacking the data");
             }
-        }
-        finally {
+        } catch (SqlDataOperationException e) {
+            e.getMessage();
+        } finally {
             try {
                 connection.close();
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                throw new ConnectionNotClosedException("error occurred while closing the connection");
             }
         }
         return employeePayrollUpdatedList;
     }
 
     public void updateEmployeeSalaryPreparedStatement(String name, double salary) {
-        int check = updateEmployeeSalaryInDBPreparedStatement(name, salary);
+        int check = 0;
+        try {
+            check = updateEmployeeSalaryInDBPreparedStatement(name, salary);
+        } catch (SqlDataOperationException e) {
+            e.getMessage();
+        }
         if (check != 0)
             updateEmployeeSalaryInObject(name, salary);
         else System.out.println("query was not executed");
     }
 
-    private int updateEmployeeSalaryInDBPreparedStatement(String name, double salary) {
+    private int updateEmployeeSalaryInDBPreparedStatement(String name, double salary) throws SqlDataOperationException {
         int result = 0;
         String query = " update payroll_details inner join employee_details on employee_details.emp_id=payroll_details.emp_id" +
                 " set payroll_details.basic_pay=?,payroll_details.deductions=?" +
                 ",payroll_details.taxable_pay=?,payroll_details.income_tax=?" +
                 ",payroll_details.net_pay=? where employee_details.name=? and is_active=true;";
         DatabaseConnection databaseConnection = new DatabaseConnection();
-        Connection connection = databaseConnection.getConnecton();
+        Connection connection = null;
+        try {
+            connection = databaseConnection.getConnecton();
+        } catch (FailedConnectionException e) {
+            e.getMessage();
+        }
         try {
             preparedStatement = connection.prepareStatement(query);
             preparedStatement.setDouble(1, salary);
@@ -203,22 +240,27 @@ public class EmployeePayrollServiceDB {
             result = preparedStatement.executeUpdate();
 
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            throw new SqlDataOperationException("Some error occurred while performing sql operation");
         }
         return result;
     }
 
-    public boolean checkSalarySyncWithDBPreparedStatement(String name) {
+    public boolean checkSalarySyncWithDBPreparedStatement(String name) throws RollBackFailedException, ConnectionNotClosedException {
         ArrayList<EmployeePayroll> employeePayrollArrayListDB = new ArrayList<EmployeePayroll>(employeePayrollArrayList.stream().
                 filter(p -> p.getName().
                         equals(name)).collect(Collectors.toList()));
         return employeePayrollArrayListDB.toString().equals(checkSalaryRecordInDBPreparedStatement(name).toString());
     }
 
-    public ArrayList<EmployeePayroll> checkSalaryRecordInDBPreparedStatement(String name) {
+    public ArrayList<EmployeePayroll> checkSalaryRecordInDBPreparedStatement(String name) throws RollBackFailedException, ConnectionNotClosedException {
         ResultSet resultSet1 = null,resultSet2;
         DatabaseConnection databaseConnection = new DatabaseConnection();
-        Connection connection = databaseConnection.getConnecton();
+        Connection connection = null;
+        try {
+            connection = databaseConnection.getConnecton();
+        } catch (FailedConnectionException e) {
+            e.getMessage();
+        }
         ArrayList<EmployeePayroll> employeePayrollUpdatedList = new ArrayList<EmployeePayroll>();
         String query1 = "select employee_details.emp_id,employee_details.name,employee_details.gender,employee_details.address," +
                 "employee_details.start,payroll_details.basic_pay from employee_details inner join" +
@@ -230,11 +272,11 @@ public class EmployeePayrollServiceDB {
             resultSet1 = preparedStatement.executeQuery();
             connection.commit();
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RollBackFailedException("Error occurred while rollbacking the data");
             }
         }
 
@@ -247,27 +289,32 @@ public class EmployeePayrollServiceDB {
             connection.commit();
             employeePayrollUpdatedList=getEmployeeListFromResultSet(resultSet1,resultSet2,employeePayrollUpdatedList);
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RollBackFailedException("Error occurred while rollbacking the data");
             }
-        }
-        finally {
+        } catch (SqlDataOperationException e) {
+            e.getMessage();
+        } finally {
             try {
                 connection.close();
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                throw new ConnectionNotClosedException("error occurred while closing the connection");
             }
         }
         return employeePayrollUpdatedList;
     }
 
-    public ArrayList<EmployeePayroll> getEmployeeListBasedOnDate(LocalDate startDate, LocalDate endDate) {
+    public ArrayList<EmployeePayroll> getEmployeeListBasedOnDate(LocalDate startDate, LocalDate endDate) throws RollBackFailedException, ConnectionNotClosedException {
         ResultSet resultSet1 = null,resultSet2;
         DatabaseConnection databaseConnection = new DatabaseConnection();
-        Connection connection = databaseConnection.getConnecton();
+        Connection connection = null;
+        try {
+            connection = databaseConnection.getConnecton();
+        } catch (FailedConnectionException e) {
+            e.getMessage();
+        }
         ArrayList<EmployeePayroll> employeePayrollUpdatedList = new ArrayList<EmployeePayroll>();
 
         String query1 = "select employee_details.emp_id,employee_details.name,employee_details.gender,employee_details.address," +
@@ -282,11 +329,11 @@ public class EmployeePayrollServiceDB {
             resultSet1 = preparedStatement.executeQuery();
             connection.commit();
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RollBackFailedException("Error occurred while rollbacking the data");
             }
         }
         String query2 = "select emp_id, department_name from department_details inner join employee_department on department_details.dep_id=employee_department.dep_id  where emp_id in (select emp_id from employee_details where start between ? and ? and is_active=true);";
@@ -298,33 +345,39 @@ public class EmployeePayrollServiceDB {
             resultSet2 = preparedStatement.executeQuery();
             employeePayrollUpdatedList=getEmployeeListFromResultSet(resultSet1,resultSet2,employeePayrollUpdatedList);
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RollBackFailedException("Error occurred while rollbacking the data");
             }
-        }
-        finally {
+        } catch (SqlDataOperationException e) {
+            e.getMessage();
+        } finally {
             try {
                 connection.close();
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                throw new ConnectionNotClosedException("error occurred while closing the connection");
             }
         }
         return employeePayrollUpdatedList;
     }
 
-    public TreeMap<String, Double> getSalaryByAvgGender() {
+    public TreeMap<String, Double> getSalaryByAvgGender() throws SqlDataOperationException {
 
         String query = "select avg(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id where is_active=true group by employee_details.gender";
         return getMapofGenderSalary(query);
     }
 
-    private TreeMap<String, Double> getMapofGenderSalary(String query) {
+    private TreeMap<String, Double> getMapofGenderSalary(String query) throws SqlDataOperationException {
         TreeMap<String, Double> stringDoubleTreeMap = new TreeMap<String, Double>();
         DatabaseConnection databaseConnection = new DatabaseConnection();
-        Connection connection = databaseConnection.getConnecton();
+        Connection connection = null;
+        try {
+            connection = databaseConnection.getConnecton();
+        } catch (FailedConnectionException e) {
+            e.getMessage();
+        }
         try {
             statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
@@ -334,36 +387,49 @@ public class EmployeePayrollServiceDB {
                 stringDoubleTreeMap.put(gender, salary);
             }
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
-
+            throw new SqlDataOperationException("Some error occurred while performing sql operation");
         }
         return stringDoubleTreeMap;
     }
 
-    public TreeMap<String, Double> getSalaryBySumGender() {
+    public TreeMap<String, Double> getSalaryBySumGender() throws SqlDataOperationException {
         String query = "select sum(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id where is_active=true group by employee_details.gender";
         return getMapofGenderSalary(query);
     }
 
-    public TreeMap<String, Double> getMaxSalaryByGender() {
+    public TreeMap<String, Double> getMaxSalaryByGender() throws SqlDataOperationException {
         String query = "select max(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id where is_active=true group by employee_details.gender";
         return getMapofGenderSalary(query);
     }
 
-    public TreeMap<String, Double> getMinSalaryByGender() {
+    public TreeMap<String, Double> getMinSalaryByGender() throws SqlDataOperationException {
         String query = "select min(payroll_details.basic_pay) as salary,employee_details.gender from employee_details inner join payroll_details on employee_details.emp_id=payroll_details.emp_id where is_active=true group by employee_details.gender";
         return getMapofGenderSalary(query);
 
     }
 
-    public void addEmployeeData(int id, String name, Character gender, String address, LocalDate date, double salary, String department) {
+    public void addEmployeeData(int id, String name, Character gender, String address, LocalDate date, double salary, String department) throws RollBackFailedException, ConnectionNotClosedException {
         int rowaffected1 = 0, rowaffected2=0,rowaffected3=0,rowaffected4;
-        employeePayrollArrayList = readFromDB();
-        int dep_id=getDepIDFromDB(department);
+        try {
+            employeePayrollArrayList = readFromDB();
+        } catch (RollBackFailedException | ConnectionNotClosedException | SqlDataOperationException e) {
+            e.getMessage();
+        }
+        int dep_id= 0;
+        try {
+            dep_id = getDepIDFromDB(department);
+        } catch (SqlDataOperationException e) {
+            e.getMessage();
+        }
         String query1 = String.format("insert into employee_details (emp_id,name,gender,address,start) " +
                 "values (%s,'%s','%s','%s','%s');", id, name, gender, address, Date.valueOf(date));
         DatabaseConnection databaseConnection = new DatabaseConnection();
-        Connection connection = databaseConnection.getConnecton();
+        Connection connection = null;
+        try {
+            connection = databaseConnection.getConnecton();
+        } catch (FailedConnectionException e) {
+            e.getMessage();
+        }
         try {
             connection.setAutoCommit(false);
             statement = connection.createStatement();
@@ -376,7 +442,7 @@ public class EmployeePayrollServiceDB {
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RollBackFailedException("Error occurred while rollbacking the data");
             }
         }
 
@@ -395,7 +461,7 @@ public class EmployeePayrollServiceDB {
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RollBackFailedException("Error occurred while rollbacking the data");
             }
         }
         String query3=String.format("insert into employee_department values (%s,%s)",id,dep_id);
@@ -414,7 +480,7 @@ public class EmployeePayrollServiceDB {
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RollBackFailedException("Error occurred while rollbacking the data");
             }
         }
 
@@ -424,29 +490,34 @@ public class EmployeePayrollServiceDB {
             rowaffected4 = statement.executeUpdate(query4);
             connection.commit();
             if (rowaffected1 == 1 && rowaffected2 == 1&&rowaffected3==1&&rowaffected4==1) {
-                employeePayrollArrayList.stream().filter(p->p.getEmpID()==id).forEach(p->p.getDepartment().add(department));
+                employeePayrollArrayList.stream().filter(p->p.getId()==id).forEach(p->p.getDepartment().add(department));
             } else System.out.println("data not added");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RollBackFailedException("Error occurred while rollbacking the data");
             }
         }
         finally {
             try {
                 connection.close();
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                throw new ConnectionNotClosedException("error occurred while closing the connection");
             }
         }
     }
 
-    private int getDepIDFromDB(String department) {
+    private int getDepIDFromDB(String department) throws SqlDataOperationException {
         int dep_id=100;
         DatabaseConnection databaseConnection = new DatabaseConnection();
-        Connection connection = databaseConnection.getConnecton();
+        Connection connection = null;
+        try {
+            connection = databaseConnection.getConnecton();
+        } catch (FailedConnectionException e) {
+            e.getMessage();
+        }
         String query="select dep_id from department_details where department_name='"+department+"';";
         try {
             statement = connection.createStatement();
@@ -460,24 +531,28 @@ public class EmployeePayrollServiceDB {
                 dep_id++;
             }
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            throw new SqlDataOperationException("Some error occurred while performing sql operation");
         }
         return dep_id;
     }
 
-    public void deleteEntryFromDataBase(String name) {
+    public void deleteEntryFromDataBase(String name) throws SqlDataOperationException {
         String query="update employee_details set is_active=false where name='"+name+"';";
         DatabaseConnection databaseConnection = new DatabaseConnection();
-        Connection connection = databaseConnection.getConnecton();
+        Connection connection = null;
+        try {
+            connection = databaseConnection.getConnecton();
+        } catch (FailedConnectionException e) {
+            e.getMessage();
+        }
         try {
             statement = connection.createStatement();
            int rowaffected= statement.executeUpdate(query);
            if(!(rowaffected==1)) System.out.println("operation not successful");
 
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            throw new SqlDataOperationException("Some error occurred while performing sql operation");
         }
     }
 }
 
-   // select emp_id, department_name from department_details inner join employee_department on department_details.dep_id=employee_department.dep_id where emp_id=3;

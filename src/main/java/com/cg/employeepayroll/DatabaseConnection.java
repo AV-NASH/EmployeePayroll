@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.Enumeration;
 
 public class DatabaseConnection {
-    public  Connection getConnecton() {
+    public  Connection getConnecton() throws FailedConnectionException {
         String jdbcURL="jdbc:mysql://localhost:3306/payroll_service?useSSL=false";
         String userName="root";
         String password="Nuzumaki1@";
@@ -21,7 +21,7 @@ public class DatabaseConnection {
         try {
             connection=DriverManager.getConnection(jdbcURL,userName,password);
         } catch (SQLException e) {
-            System.out.println("connection failed");
+            throw new FailedConnectionException("Cannot establish the connection");
         }
         return connection;
     }

@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class EmployeePayroll {
-    private int empID;
+    private int id;
     private  String name;
     private char gender;
     private String address;
@@ -20,7 +20,7 @@ public class EmployeePayroll {
 
 
     public EmployeePayroll(int empID, String name,char gender, String address, LocalDate date, double salary) {
-        this.empID = empID;
+        this.id = empID;
         this.name = name;
         this.gender=gender;
         this.address = address;
@@ -29,15 +29,15 @@ public class EmployeePayroll {
     }
 
     public EmployeePayroll(int empID, String name, char gender, String address, LocalDate date) {
-        this.empID = empID;
+        this.id = empID;
         this.name = name;
         this.gender = gender;
         this.address = address;
         this.date = date;
     }
 
-    public int getEmpID() {
-        return empID;
+    public int getId() {
+        return id;
     }
 
     public String getName() {
@@ -56,8 +56,8 @@ public class EmployeePayroll {
         return salary;
     }
 
-    public void setEmpID(int empID) {
-        this.empID = empID;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setName(String name) {
@@ -79,7 +79,7 @@ public class EmployeePayroll {
     @Override
     public String toString() {
         return "EmployeePayroll{" +
-                "empID=" + empID +
+                "empID=" + id +
                 ", name='" + name + '\'' +
                 ", address='" + address + '\'' +
                 ", date=" + date +
