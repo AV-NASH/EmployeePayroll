@@ -109,4 +109,23 @@ public class EmployeePayrollRESTAPITest {
         Assert.assertEquals(200,statuscode);
     }
 
+    @Test
+    public void givenEmployeeToDeleteWhenDeletedShouldMatchStatusCodeAndCount() {
+        EmployeePayroll[] employeePayrolls=getEmployeeList();
+        EmployeePayrollRESTAPI employeePayrollRESTAPI=new EmployeePayrollRESTAPI((Arrays.asList(employeePayrolls)));
+        EmployeePayroll employeePayroll=employeePayrollRESTAPI.getEmployeePayrollData("Bill");
+
+        String jsonFile=new Gson().toJson(employeePayroll);
+        RequestSpecification requestSpecification=RestAssured.given();
+        requestSpecification.header("Content-Type","application/json");
+        requestSpecification.body(jsonFile);
+        Response response= requestSpecification.delete("/employees/"+employeePayroll.getId());
+        int statuscode=response.getStatusCode();
+        Assert.assertEquals(200,statuscode);
+
+        employeePayrollRESTAPI.removeEmployeePayrollData("Bill");
+        long check= employeePayrollRESTAPI.countEntries();
+        Assert.assertEquals(5,check);
+    }
+
 }
