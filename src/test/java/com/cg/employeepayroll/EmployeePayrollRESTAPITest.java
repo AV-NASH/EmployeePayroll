@@ -93,4 +93,20 @@ public class EmployeePayrollRESTAPITest {
     }
 
 
+    @Test
+    public void givenNewSalaryForEmployee_WhenUpdated_ShouldMatch200Response() {
+        EmployeePayroll[] employeePayrolls=getEmployeeList();
+        EmployeePayrollRESTAPI employeePayrollRESTAPI=new EmployeePayrollRESTAPI((Arrays.asList(employeePayrolls)));
+        employeePayrollRESTAPI.updateEmployeePayrollData("Bill",54000.0);
+        EmployeePayroll employeePayroll=employeePayrollRESTAPI.getEmployeePayrollData("Bill");
+
+        String jsonFile=new Gson().toJson(employeePayroll);
+        RequestSpecification requestSpecification=RestAssured.given();
+        requestSpecification.header("Content-Type","application/json");
+        requestSpecification.body(jsonFile);
+        Response response= requestSpecification.put("/employees/"+employeePayroll.getId());
+        int statuscode=response.getStatusCode();
+        Assert.assertEquals(200,statuscode);
+    }
+
 }
