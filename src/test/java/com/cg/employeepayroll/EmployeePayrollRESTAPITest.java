@@ -25,6 +25,13 @@ public class EmployeePayrollRESTAPITest {
         System.out.println(employeePayrolls[1]);
         return employeePayrolls;
     }
+    private Response addEmployeeToJsonServer(EmployeePayroll employeePayroll) {
+        String jsonFile=new Gson().toJson(employeePayroll);
+        RequestSpecification requestSpecification=RestAssured.given();
+        requestSpecification.header("Content-Type","application/json");
+        requestSpecification.body(jsonFile);
+        return requestSpecification.post("/employees");
+    }
 
     @Test
     public void givenDataInJsonServerWhenRetrievedShouldMatchTheCount() {
@@ -34,5 +41,21 @@ public class EmployeePayrollRESTAPITest {
         Assert.assertEquals(3,count);
 
     }
+
+    @Test
+    public void givenNewEmployeeWhenAddedMatch201ResponseCodeAndCount() {
+        EmployeePayroll[] employeePayrolls=getEmployeeList();
+        EmployeePayrollRESTAPI employeePayrollRESTAPI=new EmployeePayrollRESTAPI((Arrays.asList(employeePayrolls)));
+        EmployeePayroll employeePayroll=new EmployeePayroll(4,"Mark",'M',"Ohio", LocalDate.now(),25000.0);
+        Response response=addEmployeeToJsonServer(employeePayroll);
+        int status=response.getStatusCode();
+        Assert.assertEquals(201,status);
+
+        employeePayroll=new Gson().fromJson(response.asString(),EmployeePayroll.class);
+        employeePayrollRESTAPI.addEmployeeToList(employeePayroll);
+        long count= employeePayrollRESTAPI.countEntries();
+        Assert.assertEquals(4,count);
+    }
+
 
 }
