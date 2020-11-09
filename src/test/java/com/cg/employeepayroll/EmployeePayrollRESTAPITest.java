@@ -57,5 +57,40 @@ public class EmployeePayrollRESTAPITest {
         Assert.assertEquals(4,count);
     }
 
+    @Test
+    public void givenListOfEmployeesWhenAddedMatch201StatusCodeAndCount() throws ThreadInterruptionException {
+        EmployeePayroll[] employeePayrolls=getEmployeeList();
+        EmployeePayrollRESTAPI employeePayrollRESTAPI=new EmployeePayrollRESTAPI((Arrays.asList(employeePayrolls)));
+        EmployeePayroll[] newEmployeePayroll={new EmployeePayroll(5,"Cory",'M',"Madras", LocalDate.now(),65000.0),
+                new EmployeePayroll(6,"Sam",'M',"London", LocalDate.now(),43000.0)
+        };
+        ArrayList<EmployeePayroll> employeePayrollArrayList=new ArrayList<>(Arrays.asList(newEmployeePayroll));
+        int[] count=new int[1];
+        count[0]=0;
+        employeePayrollArrayList.stream().forEach(p->{
+            Runnable runnable=()->{
+                Response response=addEmployeeToJsonServer(p);
+                int status=response.getStatusCode();
+                Assert.assertEquals(201,status);
+                EmployeePayroll employeePayroll=new Gson().fromJson(response.asString(),EmployeePayroll.class);
+                employeePayrollRESTAPI.addEmployeeToList(employeePayroll);
+                count[0]++;
+                System.out.println( count[0]);
+            };
+            Thread thread=new Thread(runnable);
+            thread.start();
+        });
+        while(count[0]<employeePayrollArrayList.size()){
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                throw new ThreadInterruptionException("Process was Interrupted for some reason..");
+            }
+        }
+        long check= employeePayrollRESTAPI.countEntries();
+        Assert.assertEquals(6,check);
+
+    }
+
 
 }
